@@ -1,8 +1,8 @@
 using CleanArch.Application.Products.GetProductById;
 using CleanArch.Application.Products.GetProducts;
-using CleanArch.Web.Extensions;
+using CleanArch.Web.Api.Extensions;
 
-namespace CleanArch.Web.Endpoints;
+namespace CleanArch.Web.Api.Endpoints;
 
 public class Products : EndpointGroupBase
 {
