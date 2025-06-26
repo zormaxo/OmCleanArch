@@ -15,6 +15,13 @@ builder.Host.UseSerilog(
 var services = builder.Services;
 services.AddApplicationServices().AddInfrastructureServices(builder.Environment).AddWebServices();
 
+services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod()
+    );
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -34,6 +41,8 @@ else
 app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseRequestContextLogging();
 app.UseSerilogRequestLogging();
