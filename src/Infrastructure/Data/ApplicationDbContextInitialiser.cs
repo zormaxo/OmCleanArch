@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using CleanArch.Domain.Products;
 using CleanArch.Domain.TodoLists;
 using CleanArch.Domain.Users;
 using CleanArch.Domain.ValueObjects;
@@ -63,6 +64,7 @@ public static class ApplicationDbContextInitialiser
         var seedDir = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "Infrastructure", "Data", "Seed"));
         var usersJsonPath = Path.Combine(seedDir, "users.json");
         var listsJsonPath = Path.Combine(seedDir, "todolists.json");
+        var productsJsonPath = Path.Combine(seedDir, "products.json");
 
         if (!context.Users.Any())
         {
@@ -105,6 +107,20 @@ public static class ApplicationDbContextInitialiser
                 await context.SaveChangesAsync();
                 logger.LogInformation("Seeded {ListCount} lists.", listsData.Count);
             }
+        }
+        if (!context.Products.Any() && File.Exists(productsJsonPath))
+        {
+            logger.LogInformation("Seeding products from {Path}", productsJsonPath);
+            var productsJson = await File.ReadAllTextAsync(productsJsonPath);
+            var products = JsonSerializer.Deserialize<List<Product>>(productsJson, _jsonOptions);
+            if (products is null || products.Count == 0)
+            {
+                logger.LogWarning("No data found in products.json");
+                return;
+            }
+            context.Products.AddRange(products);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {ProductCount} products.", products.Count);
         }
     }
 }
