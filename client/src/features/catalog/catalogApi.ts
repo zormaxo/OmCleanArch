@@ -2,22 +2,18 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import type { Product } from "../../app/models/product";
 import { baseQueryWithEnhancements } from "../../app/api/baseApi";
 
-/**
- * Catalog API - Handles product-related operations
- * Uses centralized base query with logging and error handling
- */
 export const catalogApi = createApi({
   reducerPath: "catalogApi",
   baseQuery: baseQueryWithEnhancements,
-  tagTypes: ["Product"],
+  // tagTypes: ["Product"],
   endpoints: (builder) => ({
     fetchProducts: builder.query<Product[], void>({
       query: () => "products",
-      providesTags: ["Product"],
+      // providesTags: ["Product"],
     }),
     fetchProductDetails: builder.query<Product, number>({
       query: (productId) => `products/${productId}`,
-      providesTags: (_result, _error, id) => [{ type: "Product", id }],
+      // providesTags: (_result, _error, id) => [{ type: "Product", id }],
     }),
   }),
 });

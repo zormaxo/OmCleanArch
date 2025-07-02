@@ -3,7 +3,6 @@
  * It adds logging, loading state, and global error handling.
  * For details and examples, see README.baseApi.md.
  */
-
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type {
   BaseQueryFn,
