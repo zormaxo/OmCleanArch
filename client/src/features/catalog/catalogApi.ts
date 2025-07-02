@@ -1,19 +1,27 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import type { Product } from "../../app/models/product";
-import { baseQueryWithErrorHandling } from "../../app/api/baseApi";
+import { baseQueryWithEnhancements } from "../../app/api/baseApi";
 
+/**
+ * Catalog API - Handles product-related operations
+ * Uses centralized base query with logging and error handling
+ */
 export const catalogApi = createApi({
   reducerPath: "catalogApi",
-  baseQuery: baseQueryWithErrorHandling,
+  baseQuery: baseQueryWithEnhancements,
+  tagTypes: ["Product"],
   endpoints: (builder) => ({
     fetchProducts: builder.query<Product[], void>({
-      query: () => ({ url: "products" }),
+      query: () => "products",
+      providesTags: ["Product"],
     }),
     fetchProductDetails: builder.query<Product, number>({
       query: (productId) => `products/${productId}`,
+      providesTags: (_result, _error, id) => [{ type: "Product", id }],
     }),
   }),
 });
 
-export const { useFetchProductDetailsQuery, useFetchProductsQuery } =
+// Export generated hooks
+export const { useFetchProductsQuery, useFetchProductDetailsQuery } =
   catalogApi;
