@@ -7,6 +7,7 @@ import {
   useLazyGetValidationErrorQuery,
 } from "./errorApi";
 import { useState } from "react";
+import type { ProblemDetails } from "../../app/types/api";
 
 export default function AboutPage() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -17,18 +18,12 @@ export default function AboutPage() {
   const [trigger500Error] = useLazyGet500ErrorQuery();
   const [triggerValidationError] = useLazyGetValidationErrorQuery();
 
-  const getValidatonError = async () => {
-    try {
-      await triggerValidationError().unwrap();
-    } catch (error: unknown) {
-      if (
-        error &&
-        typeof error === "object" &&
-        "message" in error &&
-        typeof (error as { message: unknown }).message === "string"
-      ) {
-        const errorArray = (error as { message: string }).message.split(", ");
-        setValidationErrors(errorArray);
+  const getValidationError = async () => {
+    const result = await triggerValidationError();
+    if (result.error && "data" in result.error) {
+      const problemDetails = result.error.data as ProblemDetails;
+      if (problemDetails?.errors && Array.isArray(problemDetails.errors)) {
+        setValidationErrors(problemDetails.errors.map((err) => err.description || err.code));
       }
     }
   };
@@ -51,7 +46,7 @@ export default function AboutPage() {
         <Button variant="contained" onClick={() => trigger500Error().catch((err) => console.log(err))}>
           Test 500 Error
         </Button>
-        <Button variant="contained" onClick={getValidatonError}>
+        <Button variant="contained" onClick={getValidationError}>
           Test Validation Error
         </Button>
       </ButtonGroup>

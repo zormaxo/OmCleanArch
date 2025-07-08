@@ -3,10 +3,12 @@
  * It adds logging, loading state, and global error handling.
  * For details and examples, see README.baseApi.md.
  */
-import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { startLoading, stopLoading } from "../layout/uiSlice";
+import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { toast } from "react-toastify";
+import { startLoading, stopLoading } from "../layout/uiSlice";
+import type { ProblemDetails } from "../types/api";
+import { router } from "../routes/Routes";
 
 const API_BASE_URL = "http://localhost:7700/api";
 const sleep = () => new Promise((resolve) => setTimeout(resolve, 1000));
@@ -102,39 +104,23 @@ const handleGlobalError = (error: FetchBaseQueryError, args: string | FetchArgs)
   // Log specific error types
   if (error.status === 400) {
     console.warn("⚠️ Bad request detected:", url);
+    toast.error(errorMessage);
   } else if (error.status === 401) {
     console.warn("🔐 Unauthorized access detected");
+    toast.error(errorMessage);
     // Handle unauthorized - maybe redirect to login
   } else if (error.status === 403) {
     console.warn("🚫 Forbidden access detected");
+    toast.error(errorMessage);
     // Handle forbidden
   } else if (error.status === 404) {
     console.warn("🔍 Resource not found:", url);
+    toast.error(errorMessage);
   } else if (error.status === 500) {
     console.error("💥 Server error detected");
+    router.navigate("/server-error", { state: error.data as ProblemDetails });
     // Maybe show toast notification
   }
 
-  // Show toast for all errors
-  toast.error(errorMessage);
-
   // Add more global error handling logic here
 };
-
-// .NET Problem Details standard (RFC 7807) with validation errors
-interface ValidationError {
-  code: string;
-  description: string;
-  type: string;
-}
-
-interface ProblemDetails {
-  type?: string;
-  title?: string;
-  status?: number;
-  detail?: string;
-  instance?: string;
-  traceId?: string;
-  errors?: ValidationError[]; // Validation errors array
-  [key: string]: unknown; // Allow additional properties
-}
