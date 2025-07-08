@@ -115,7 +115,7 @@ const handleGlobalError = (error: FetchBaseQueryError, args: string | FetchArgs)
     // Handle forbidden
   } else if (error.status === 404) {
     console.warn("🔍 Resource not found:", url);
-    toast.error(errorMessage);
+    router.navigate("/not-found");
   } else if (error.status === 500) {
     console.error("💥 Server error detected");
     router.navigate("/server-error", { state: error.data as ProblemDetails });
