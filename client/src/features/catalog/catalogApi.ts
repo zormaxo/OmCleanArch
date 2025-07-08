@@ -19,5 +19,4 @@ export const catalogApi = createApi({
 });
 
 // Export generated hooks
-export const { useFetchProductsQuery, useFetchProductDetailsQuery } =
-  catalogApi;
+export const { useFetchProductsQuery, useFetchProductDetailsQuery } = catalogApi;

@@ -23,9 +23,25 @@ builder.AddServiceDefaults();
 
 // builder.Logging.AddOpenTelemetryLogging(builder.Configuration);
 
-builder.Services.AddApplicationServices().AddInfrastructureServices(builder.Environment, builder.Configuration).AddWebServices();
+builder
+    .Services.AddApplicationServices()
+    .AddInfrastructureServices(builder.Environment, builder.Configuration)
+    .AddWebServices();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "LocalCorsPolicy",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4000", "https://localhost:4000").AllowAnyHeader().AllowAnyMethod();
+        }
+    );
+});
 
 var app = builder.Build();
+
+app.UseCors("LocalCorsPolicy");
 
 app.MapDefaultEndpoints();
 

@@ -10,6 +10,7 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
 import { startLoading, stopLoading } from "../layout/uiSlice";
+import { toast } from "react-toastify";
 
 const API_BASE_URL = "http://localhost:7700/api";
 const sleep = () => new Promise((resolve) => setTimeout(resolve, 1000));
@@ -78,14 +79,26 @@ export const baseQueryWithEnhancements: BaseQueryFn<
   }
 };
 
-// Global error handler
-const handleGlobalError = (
-  error: FetchBaseQueryError,
-  args: string | FetchArgs
-) => {
-  const url = typeof args === "string" ? args : args.url;
+// Utility to extract error message from server response
+const getErrorMessage = (error: FetchBaseQueryError): string => {
+  if (error.data && typeof error.data === "object" && "detail" in error.data && typeof error.data.detail === "string") {
+    return error.data.detail;
+  }
+  if (typeof error.data === "string") {
+    return error.data;
+  }
+  return "Request failed";
+};
 
-  if (error.status === 401) {
+// Global error handler
+const handleGlobalError = (error: FetchBaseQueryError, args: string | FetchArgs) => {
+  const url = typeof args === "string" ? args : args.url;
+  const errorMessage = getErrorMessage(error);
+
+  // Log specific error types
+  if (error.status === 400) {
+    console.warn("⚠️ Bad request detected:", url);
+  } else if (error.status === 401) {
     console.warn("🔐 Unauthorized access detected");
     // Handle unauthorized - maybe redirect to login
   } else if (error.status === 403) {
@@ -97,6 +110,9 @@ const handleGlobalError = (
     console.error("💥 Server error detected");
     // Maybe show toast notification
   }
+
+  // Show toast for all errors
+  toast.error(errorMessage);
 
   // Add more global error handling logic here
 };
