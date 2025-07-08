@@ -4,11 +4,7 @@
  * For details and examples, see README.baseApi.md.
  */
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type {
-  BaseQueryFn,
-  FetchArgs,
-  FetchBaseQueryError,
-} from "@reduxjs/toolkit/query";
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { startLoading, stopLoading } from "../layout/uiSlice";
 import { toast } from "react-toastify";
 
@@ -26,10 +22,7 @@ const logRequest = (args: string | FetchArgs) => {
   console.log(`🚀 API Request: ${method} ${API_BASE_URL}/${url}`);
 };
 
-const logResponse = (
-  args: string | FetchArgs,
-  result: { data?: unknown; error?: FetchBaseQueryError }
-) => {
+const logResponse = (args: string | FetchArgs, result: { data?: unknown; error?: FetchBaseQueryError }) => {
   const url = typeof args === "string" ? args : args.url;
   if (result.error) {
     console.error(`❌ API Error: ${url}`, result.error);
@@ -39,11 +32,11 @@ const logResponse = (
 };
 
 // Enhanced base query with logging, loading states, and error handling
-export const baseQueryWithEnhancements: BaseQueryFn<
-  string | FetchArgs,
-  unknown,
-  FetchBaseQueryError
-> = async (args, api, extraOptions) => {
+export const baseQueryWithEnhancements: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
+  args,
+  api,
+  extraOptions
+) => {
   // Pre-request logging
   logRequest(args);
 
@@ -81,8 +74,19 @@ export const baseQueryWithEnhancements: BaseQueryFn<
 
 // Utility to extract error message from server response
 const getErrorMessage = (error: FetchBaseQueryError): string => {
-  if (error.data && typeof error.data === "object" && "detail" in error.data && typeof error.data.detail === "string") {
-    return error.data.detail;
+  // Check if error.data matches ProblemDetails structure
+  const problemDetails = error.data as ProblemDetails;
+
+  // If there are validation errors, return them as a formatted string
+  if (problemDetails?.errors && Array.isArray(problemDetails.errors) && problemDetails.errors.length > 0) {
+    return problemDetails.errors.map((err) => err.description || err.code).join(", ");
+  }
+
+  if (problemDetails?.detail) {
+    return problemDetails.detail;
+  }
+  if (problemDetails?.title) {
+    return problemDetails.title;
   }
   if (typeof error.data === "string") {
     return error.data;
@@ -116,3 +120,21 @@ const handleGlobalError = (error: FetchBaseQueryError, args: string | FetchArgs)
 
   // Add more global error handling logic here
 };
+
+// .NET Problem Details standard (RFC 7807) with validation errors
+interface ValidationError {
+  code: string;
+  description: string;
+  type: string;
+}
+
+interface ProblemDetails {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  traceId?: string;
+  errors?: ValidationError[]; // Validation errors array
+  [key: string]: unknown; // Allow additional properties
+}
